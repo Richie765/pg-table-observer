@@ -1,44 +1,39 @@
-# pg-observe-table
-Observe PostgreSQL table for changes
+#!/usr/bin/env node --use_strict
 
-# Usage
+import 'source-map-support/register';
 
-```javascript
-import PgTableObserver from 'pg-table-observer';
-
-// Create table_observer and cleanup automatically
+// import PgTableObserver from 'pg-table-observer';
+import PgTableObserver from '../PgTableObserver';
 
 var table_observer = new PgTableObserver('postgres://localhost/app', 'myappx');
 
 process.on('SIGTERM', () => table_observer.cleanup(true));
 process.on('SIGINT', () => table_observer.cleanup(true));
 
-// Done some observing
-
 async function start() {
   try {
-    // Multiple tables can be specified as an array
-
-    let handle = await table_observer.observeTables('test', change => {
+    let handle = await table_observer.observeTables(['test'], change => {
       console.log(change);
     });
 
     // ... when finished observing the table
 
-    await handle.stop();
+    // setTimeout(async () => {
+    //   console.log("Stopping");
+    //   await handle.stop();
+    //   await table_observer.cleanup();
+    // }, 3000);
 
     // ... when finished observing altogether
 
-    await table_observer.cleanup();
+//    await table_observer.cleanup();
+
   }
   catch(err) {
     console.error(err);
   }
 }
 
-// Show unhandled rejections
-
 process.on('unhandledRejection', (err, p) => console.log(err.stack));
 
 start();
-```

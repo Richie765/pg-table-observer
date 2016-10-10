@@ -1,0 +1,36 @@
+{
+  "name": "pg-observe-table",
+  "version": "0.0.1",
+  "description": "Observe PostgreSQL tables for changes",
+  "main": "PgTableObserver.js",
+  "dependencies": {
+    "pg-promise": "^5.2.0",
+    "source-map-support": "0.4.2"
+  },
+  "devDependencies": {
+    "babel-cli": "6.14.0",
+    "babel-plugin-syntax-async-functions": "^6.8.0",
+    "babel-plugin-transform-runtime": "^6.9.0",
+    "babel-preset-es2015": "6.14.0",
+    "babel-preset-stage-3": "6.11.0"
+  },
+  "scripts": {
+    "start": "forever start forever.json",
+    "build": "babel src -d dist --source-maps inline",
+    "build-watch": "babel --watch src -d dist --source-maps inline"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Richie765/pg-observe-table.git"
+  },
+  "keywords": [
+    "postgresql",
+    "observe"
+  ],
+  "author": "Richard Faasen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Richie765/pg-observe-table/issues"
+  },
+  "homepage": "https://github.com/Richie765/pg-observe-table#readme"
+}
