@@ -27,7 +27,7 @@
     "postgresql",
     "observe"
   ],
-  "author": "Richard Faasen",
+  "author": "Richard",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/Richie765/pg-observe-table/issues"
