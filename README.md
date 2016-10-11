@@ -19,7 +19,7 @@ async function start() {
   try {
     // Multiple tables can be specified as an array
 
-    let handle = await table_observer.observeTables('test', change => {
+    let handle = await table_observer.notify('test', change => {
       console.log(change);
     });
 

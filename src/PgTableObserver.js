@@ -154,7 +154,7 @@ class PgTableObserver {
   // Public Methods
   //
 
-  async observeTables(tables, callback) {
+  async notify(tables, callback) {
     // Check parameter types
 
     if(typeof tables === 'string') {

@@ -12,7 +12,7 @@ process.on('SIGINT', () => table_observer.cleanup(true));
 
 async function start() {
   try {
-    let handle = await table_observer.observeTables(['test'], change => {
+    let handle = await table_observer.notify(['test'], change => {
       console.log(change);
     });
 
