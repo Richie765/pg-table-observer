@@ -154,7 +154,7 @@ class PgTableObserver {
   // Public Methods
   //
 
-  async notify(tables, callback, _stopped) {
+  async notify(tables, callback) {
     // Check parameters
 
     if(typeof tables === 'string') {
@@ -223,10 +223,6 @@ class PgTableObserver {
 
     return {
       stop: async () => {
-        // Stop triggering
-
-        if(_stopped) _stopped();
-
         // Stop notifications
 
         let promises = tables.map(async table => {
@@ -286,17 +282,19 @@ class PgTableObserver {
           // Hit the callback when timer fires
           hit = true;
         }
-      },
-
-      // Notifications were stopped, also stop our timer
-
-      () => {
-        if(timer) {
-          clearTimeout(timer);
-          timer = undefined;
-        }
       }
     );
+
+    // Overloed stop
+
+    let old_stop = handle.stop;
+    handle.stop = () => {
+      if(timer) {
+        clearTimeout(timer);
+        timer = undefined;
+      }
+      old_stop();
+    };
 
     return handle;
   }
