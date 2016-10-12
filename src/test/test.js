@@ -12,21 +12,40 @@ process.on('SIGINT', () => table_observer.cleanup(true));
 
 async function start() {
   try {
-    let handle = await table_observer.notify(['test'], change => {
-      console.log(change);
-    });
+    // Show notifications
+
+    // let handle = await table_observer.notify(['test'], change => {
+    //   console.log(change);
+    // });
+
+    // Handle triggers
+
+    let handle = await table_observer.trigger(['test'],
+      (change) => {
+        console.log(change);
+        return true;
+      },
+      () => {
+        console.log('Trigger fired');
+      }
+    );
 
     // ... when finished observing the table
 
-    // setTimeout(async () => {
-    //   console.log("Stopping");
-    //   await handle.stop();
-    //   await table_observer.cleanup();
-    // }, 3000);
+    // await handle.stop();
 
     // ... when finished observing altogether
 
-//    await table_observer.cleanup();
+    // await table_observer.cleanup();
+
+    // Change table after a delay
+
+    setTimeout(async () => {
+      let db = table_observer.db;
+      console.log('Updating test');
+      await db.any('UPDATE test SET b = CONCAT(b, "a")');
+      console.log('Test updated');
+    }, 3000);
 
   }
   catch(err) {

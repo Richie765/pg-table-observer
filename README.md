@@ -23,6 +23,12 @@ async function start() {
       console.log(change);
     });
 
+    // Or trigger a callback when a condition is met
+
+    let handle = await table_observer.trigger(condition, () => {
+      console.log("condition was met")
+    });
+
     // ... when finished observing the table
 
     await handle.stop();

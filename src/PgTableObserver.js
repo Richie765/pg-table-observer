@@ -55,11 +55,11 @@ class PgTableObserver {
         if(payload) {
           try {
             payload = JSON.parse(payload);
-            this._processPayload(payload);
           }
-          catch(error) {
-            console.error("Error parsing payload");
+          catch(err) {
+            console.error("Error parsing payload", err.stack);
           }
+          this._processPayload(payload);
         }
       }
     });
@@ -154,14 +154,14 @@ class PgTableObserver {
   // Public Methods
   //
 
-  async notify(tables, callback) {
-    // Check parameter types
+  async notify(tables, callback, _stopped) {
+    // Check parameters
 
     if(typeof tables === 'string') {
       tables = [ tables ];
     }
     else if(!Array.isArray(tables)) {
-      throw new TypeError('Table name missing');
+      throw new TypeError('Tables missing');
     }
 
     if(typeof callback !== 'function') {
@@ -223,6 +223,12 @@ class PgTableObserver {
 
     return {
       stop: async () => {
+        // Stop triggering
+
+        if(_stopped) _stopped();
+
+        // Stop notifications
+
         let promises = tables.map(async table => {
           _.pull(table_cbs[table], callback);
 
@@ -238,6 +244,61 @@ class PgTableObserver {
         await Promise.all(promises);
       }
     };
+  }
+
+  async trigger(tables, triggers, callback, delay = 200) {
+    // Check parameters
+
+    if(typeof triggers !== 'function') {
+      throw new TypeError('triggers missing');
+    }
+
+    if(typeof callback !== 'function') {
+      throw new TypeError('Callback missing');
+    }
+
+    // Observe tables and handle notifications with timer
+
+    let timer;
+    let hit;
+
+    let handle = await this.notify(tables,
+      (change) => {
+        // Timer running?
+
+        if(!timer && triggers(change)) {
+          // Callback
+
+          callback();
+
+          // Start timer for next hit
+
+          hit = false;
+
+          timer = setTimeout(() => {
+            if(hit) {
+              callback();
+            }
+            timer = undefined;
+          }, delay);
+        }
+        else if(timer && !hit && triggers(change)) {
+          // Hit the callback when timer fires
+          hit = true;
+        }
+      },
+
+      // Notifications were stopped, also stop our timer
+
+      () => {
+        if(timer) {
+          clearTimeout(timer);
+          timer = undefined;
+        }
+      }
+    );
+
+    return handle;
   }
 
   async cleanup(exit) {
