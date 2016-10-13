@@ -1,17 +1,13 @@
-var pgp = require('pg-promise')();
 var _ = require('lodash');
 
-import trigger_sql from './trigger_sql';
-
 class PgTableObserver {
-  constructor(connection, channel) {
-    this.connection = connection;
+  constructor(db, channel) {
+    this.db = db;
     this.channel = channel;
 
-    this.trigger_func = 'tblobs_' + channel;
+    this.trigger_func = undefined;
+    this.notify_conn = undefined;
 
-    this.db = undefined; // Database connection
-    this.notify_conn = undefined; // Notify connection
     this.payloads = {}; // Used by _processNotification
     this.table_cbs = {}; // table_name -> callbacks
   }
@@ -19,13 +15,13 @@ class PgTableObserver {
   // Private Methods
 
   async _init() {
-    if(this.db) {
+    if(this.trigger_func) {
       throw new Error("Already initialized");
     }
 
-    try {
-      this.db = await pgp(this.connection);
+    this.trigger_func = 'tblobs_' + this.channel;
 
+    try {
       await this._initTriggerFunc();
       await this._initListener();
     }
@@ -36,10 +32,10 @@ class PgTableObserver {
   }
 
   async _initTriggerFunc() {
-    let sql = trigger_sql(this.trigger_func, this.channel);
+    let trigger_sql = triggerSql(this.trigger_func, this.channel);
 
     await this.db.none('DROP FUNCTION IF EXISTS $1~() CASCADE', this.trigger_func);
-    await this.db.none(sql);
+    await this.db.none(trigger_sql);
   }
 
   async _initListener() {
@@ -170,7 +166,7 @@ class PgTableObserver {
 
     // initialize
 
-    if(!this.db) {
+    if(!this.trigger_func) {
       await this._init();
     }
 
@@ -299,35 +295,79 @@ class PgTableObserver {
     return handle;
   }
 
-  async cleanup(exit) {
-    // Stop listener
+  async cleanup() {
+    // Drop function, cascade to triggers
 
-    if(this.db) {
-      if(this.notify_conn) {
-        await this.notify_conn.done();
-        this.notify_conn = undefined;
-      }
-
-      // Drop function, cascade to triggers
-
+    if(this.trigger_func) {
       await this.db.none('DROP FUNCTION IF EXISTS $1~() CASCADE', this.trigger_func);
-
-      // Close db
-
-      // await this.db.end();
-      await pgp.end();
-      this.db = undefined;
-
-      // Cleanup rest
-
-      this.payloads = {};
-      this.table_cbs = {};
+      this.trigger_func = undefined;
     }
-  }
 
-  if(exit) {
-    process.exit();
+    if(this.notify_conn) {
+      await this.notify_conn.done();
+      this.notify_conn = undefined;
+    }
+
+    // Cleanup rest
+
+    this.payloads = {};
+    this.table_cbs = {};
   }
+}
+
+function triggerSql(function_name, channel) {
+  return `
+    /*
+     * Template for trigger function to send row changes over notification
+     * Accepts 2 arguments:
+     * funName: name of function to create/replace
+     * channel: NOTIFY channel on which to broadcast changes
+     */
+    CREATE FUNCTION "${function_name}"() RETURNS trigger AS $$
+      DECLARE
+        row_data   RECORD;
+        full_msg   TEXT;
+        full_len   INT;
+        cur_page   INT;
+        page_count INT;
+        msg_hash   TEXT;
+      BEGIN
+        IF (TG_OP = 'INSERT') THEN
+          SELECT
+            TG_TABLE_NAME AS table,
+            TG_OP         AS op,
+            json_agg(NEW) AS data
+          INTO row_data;
+        ELSIF (TG_OP  = 'DELETE') THEN
+          SELECT
+            TG_TABLE_NAME AS table,
+            TG_OP         AS op,
+            json_agg(OLD) AS data
+          INTO row_data;
+        ELSIF (TG_OP = 'UPDATE') THEN
+          SELECT
+            TG_TABLE_NAME AS table,
+            TG_OP         AS op,
+            json_agg(NEW) AS data,
+            json_agg(OLD) AS old_data
+          INTO row_data;
+        END IF;
+
+        SELECT row_to_json(row_data)::TEXT INTO full_msg;
+        SELECT char_length(full_msg)       INTO full_len;
+        SELECT (full_len / 7950) + 1       INTO page_count;
+        SELECT md5(full_msg)               INTO msg_hash;
+
+        FOR cur_page IN 1..page_count LOOP
+          PERFORM pg_notify('${channel}',
+            msg_hash || ':' || page_count || ':' || cur_page || ':' ||
+            substr(full_msg, ((cur_page - 1) * 7950) + 1, 7950)
+          );
+        END LOOP;
+        RETURN NULL;
+      END;
+    $$ LANGUAGE plpgsql;
+  `;
 }
 
 export default PgTableObserver;
