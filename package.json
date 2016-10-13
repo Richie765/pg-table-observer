@@ -1,8 +1,8 @@
 {
-  "name": "pg-observe-table",
-  "version": "0.0.1",
+  "name": "pg-table-observer",
+  "version": "0.0.2",
   "description": "Observe PostgreSQL tables for changes",
-  "main": "PgTableObserver.js",
+  "main": "dist/PgTableObserver.js",
   "dependencies": {
     "pg-promise": "^5.2.0",
     "source-map-support": "0.4.2"
@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Richie765/pg-observe-table.git"
+    "url": "git+https://github.com/Richie765/pg-table-observer.git"
   },
   "keywords": [
     "postgresql",
@@ -30,7 +30,7 @@
   "author": "Richard",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Richie765/pg-observe-table/issues"
+    "url": "https://github.com/Richie765/pg-table-observer/issues"
   },
-  "homepage": "https://github.com/Richie765/pg-observe-table#readme"
+  "homepage": "https://github.com/Richie765/pg-table-observer#readme"
 }
