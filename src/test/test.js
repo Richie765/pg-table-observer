@@ -4,8 +4,8 @@ import 'source-map-support/register';
 
 var pgp = require('pg-promise')();
 
-// import PgTableObserver from 'pg-table-observer';
-import PgTableObserver from '../PgTableObserver';
+import PgTableObserver from '../..';
+// import PgTableObserver from '../PgTableObserver';
 
 
 const connection = 'postgres://localhost/app';

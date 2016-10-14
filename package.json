@@ -15,7 +15,6 @@
     "babel-preset-stage-3": "6.11.0"
   },
   "scripts": {
-    "start": "forever start forever.json",
     "build": "babel src -d dist --source-maps inline",
     "build-watch": "babel --watch src -d dist --source-maps inline"
   },

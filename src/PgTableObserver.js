@@ -1,15 +1,23 @@
 var _ = require('lodash');
 
 class PgTableObserver {
-  constructor(db, channel) {
+  constructor(db, channel, options = {}) {
+    // TODO check parameters
     this.db = db;
     this.channel = channel;
+    this.options = options;
 
     this.trigger_func = undefined;
     this.notify_conn = undefined;
 
     this.payloads = {}; // Used by _processNotification
     this.table_cbs = {}; // table_name -> callbacks
+
+    // Handle default options
+
+    if(options.trigger_delay === undefined) options.trigger_delay = 200;
+    if(options.reduce_triggers === undefined) options.reduce_triggers = true;
+    if(options.trigger_first === undefined) options.trigger_first = true;
   }
 
   // Private Methods
@@ -197,9 +205,11 @@ class PgTableObserver {
 
     const drop_trigger_sql = 'DROP TRIGGER IF EXISTS $1~ ON $2~';
 
+    let channel = this.channel;
+
     let promises = tables.map(async table => {
       if(!(table in table_cbs)) {
-        var trigger_name = `${this.channel}_${table}`;
+        var trigger_name = `${channel}_${table}`;
 
         await db.none(drop_trigger_sql, [ trigger_name, table ]);
         await db.none(`
@@ -218,7 +228,7 @@ class PgTableObserver {
     await Promise.all(promises);
 
     return {
-      stop: async () => {
+      async stop() {
         // Stop notifications
 
         let promises = tables.map(async table => {
@@ -227,7 +237,7 @@ class PgTableObserver {
           if(table_cbs[table].length === 0) {
             delete table_cbs[table];
 
-            var trigger_name = `${this.channel}_${table}`;
+            var trigger_name = `${channel}_${table}`;
 
             await db.none(drop_trigger_sql, [ trigger_name, table ]);
           }
@@ -238,7 +248,7 @@ class PgTableObserver {
     };
   }
 
-  async trigger(tables, triggers, callback, delay = 200) {
+  async trigger(tables, triggers, callback) {
     // Check parameters
 
     if(typeof triggers !== 'function') {
@@ -259,24 +269,29 @@ class PgTableObserver {
         // Timer running?
 
         if(!timer && triggers(change)) {
-          // Callback
+          if(this.options.tigger_first) {
+            callback();
+            hit = false;
+          }
+          else {
+            hit=true;
+          }
 
-          callback();
-
-          // Start timer for next hit
-
-          hit = false;
+          // Start timer to call callback when trigger hit
 
           timer = setTimeout(() => {
             if(hit) {
               callback();
             }
             timer = undefined;
-          }, delay);
+          }, this.options.trigger_delay);
         }
         else if(timer && !hit && triggers(change)) {
           // Hit the callback when timer fires
           hit = true;
+        }
+        else if(!this.options.reduce_triggers) {
+          triggers(change);
         }
       }
     );
@@ -371,3 +386,4 @@ function triggerSql(function_name, channel) {
 }
 
 export default PgTableObserver;
+export { PgTableObserver };
