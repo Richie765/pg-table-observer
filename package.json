@@ -16,7 +16,8 @@
   },
   "scripts": {
     "build": "babel src -d dist --source-maps inline",
-    "build-watch": "babel --watch src -d dist --source-maps inline"
+    "build-watch": "babel --watch src -d dist --source-maps inline",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
