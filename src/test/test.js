@@ -18,7 +18,7 @@ async function start() {
 
     async function cleanupAndExit() {
       await table_observer.cleanup();
-      await pgp.end();
+      pgp.end();
       process.exit();
     }
 
