@@ -16,14 +16,14 @@ async function start() {
 
     let table_observer = new PgTableObserver(db, 'myapp');
 
-    async function cleanup_and_exit() {
+    async function cleanupAndExit() {
       await table_observer.cleanup();
       await pgp.end();
       process.exit();
     }
 
-    process.on('SIGTERM', cleanup_and_exit);
-    process.on('SIGINT', cleanup_and_exit);
+    process.on('SIGTERM', cleanupAndExit);
+    process.on('SIGINT', cleanupAndExit);
 
     // Multiple tables can be specified as an array
 

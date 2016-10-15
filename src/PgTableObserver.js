@@ -1,23 +1,16 @@
 var _ = require('lodash');
 
 class PgTableObserver {
-  constructor(db, channel, options = {}) {
+  constructor(db, channel) {
     // TODO check parameters
     this.db = db;
     this.channel = channel;
-    this.options = options;
 
     this.trigger_func = undefined;
     this.notify_conn = undefined;
 
     this.payloads = {}; // Used by _processNotification
     this.table_cbs = {}; // table_name -> callbacks
-
-    // Handle default options
-
-    if(options.trigger_delay === undefined) options.trigger_delay = 200;
-    if(options.reduce_triggers === undefined) options.reduce_triggers = true;
-    if(options.trigger_first === undefined) options.trigger_first = true;
   }
 
   // Private Methods
@@ -248,7 +241,7 @@ class PgTableObserver {
     };
   }
 
-  async trigger(tables, triggers, callback) {
+  async trigger(tables, triggers, callback, options = {}) {
     // Check parameters
 
     if(typeof triggers !== 'function') {
@@ -258,6 +251,12 @@ class PgTableObserver {
     if(typeof callback !== 'function') {
       throw new TypeError('Callback missing');
     }
+
+    // Handle default options
+
+    if(options.trigger_delay === undefined) options.trigger_delay = 200;
+    if(options.reduce_triggers === undefined) options.reduce_triggers = true;
+    if(options.trigger_first === undefined) options.trigger_first = true;
 
     // Observe tables and handle notifications with timer
 
@@ -269,7 +268,7 @@ class PgTableObserver {
         // Timer running?
 
         if(!timer && triggers(change)) {
-          if(this.options.tigger_first) {
+          if(options.tigger_first) {
             callback();
             hit = false;
           }
@@ -284,13 +283,13 @@ class PgTableObserver {
               callback();
             }
             timer = undefined;
-          }, this.options.trigger_delay);
+          }, options.trigger_delay);
         }
         else if(timer && !hit && triggers(change)) {
           // Hit the callback when timer fires
           hit = true;
         }
-        else if(!this.options.reduce_triggers) {
+        else if(!options.reduce_triggers) {
           triggers(change);
         }
       }
