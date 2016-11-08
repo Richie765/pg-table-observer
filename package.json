@@ -4,6 +4,8 @@
   "description": "Observe PostgreSQL tables for changes",
   "main": "dist/PgTableObserver.js",
   "dependencies": {
+    "babel-runtime": "^6.18.0",
+    "lodash": "^4.16.6",
     "pg-promise": "^5.2.0",
     "source-map-support": "0.4.2"
   },
