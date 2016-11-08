@@ -1,6 +1,6 @@
 {
   "name": "pg-table-observer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Observe PostgreSQL tables for changes",
   "main": "dist/PgTableObserver.js",
   "dependencies": {
