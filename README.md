@@ -79,6 +79,7 @@ Parameter | Description
 `callback` | function(change). Will be called for any change to any of the tables that are being monitored. See below for its fields.
 
 Fields for the `change` parameter of the `callback`.
+
 Field | Description
 -------------- | -----------
 `table` | String, name of the table that changed. ***This will always be in lowercase.***
@@ -118,6 +119,7 @@ Parameter | Description
 `options` | An optional object that may be used to change the default behavior as described above. See below for the possible options.
 
 Options parameter.
+
 Field | Description
 --------------- | -----------
 `trigger_first` | (default `true`): related to the 1st step above. When `true`, behaves as described above. When set to `false`, when `triggers` hit and the timer is not yet started, the `callback` will not be called immediately. Instead the timer is started and the `callback` will be called when the timer finishes. Use this if you expect many changes in short succession, or if the `callback` is relatively costly. On a heavy-load production system you may want to set this to `false`.
