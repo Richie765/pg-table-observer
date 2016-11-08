@@ -1,5 +1,7 @@
 # pg-observe-table
-Observe PostgreSQL table for changes
+Observe PostgreSQL table for changes.
+
+Requires PostgresSQL version 9.3 or above.
 
 # Usage
 
@@ -76,7 +78,8 @@ Parameter | Description
 `tables` | A string or array of tables to monitor. Table names will be converted to lowercase, and duplicates will be removed.
 `callback` | function(change). Will be called for any change to any of the tables that are being monitored. See below for its fields.
 
-`change` Field | Description
+Fields for the `change` parameter of the `callback`.
+Field | Description
 -------------- | -----------
 `table` | String, name of the table that changed. ***This will always be in lowercase.***
 `insert` | For INSERT, `true`
@@ -85,13 +88,13 @@ Parameter | Description
 `row` | The row values, for UPDATE, the NEW row values
 `change.old` | For UPDATE, the OLD row values
 
-## return
+## Return value
 
 `handle`: Object with the following fields.
 
 Field | Description
 ----- | -----------
-`async stop()` | Function. Stop observing the tables.
+`async stop()` | async function(). Stop observing the tables.
 
 # let handle = async trigger(tables, triggers, callback, [options])
 
@@ -104,8 +107,9 @@ The following logic prevents excessive callbacks when multiple rows are updated 
 * When `triggers` hits, `callback` is called and a timer is started.
 * When `triggers` hits again before the timer is finished, the `callback` will be called as soon as the timer finishes.
 * Until that happens, no `triggers` calls will happen.
+* Default behavior can be changed with `options`, see below.
 
-## parameters
+## Parameters
 
 Parameter | Description
 --------- | -----------
@@ -113,14 +117,15 @@ Parameter | Description
 `triggers` | function(change). Will be called when a change to `tables` happens, with the same fields as described above. If this function returns `true`, the `callback` | function(). Will be called with `triggers` returns true, as described above.
 `options` | An optional object that may be used to change the default behavior as described above. See below for the possible options.
 
-`options` field | Description
+Options parameter.
+Field | Description
 --------------- | -----------
 `trigger_first` | (default `true`): related to the 1st step above. When `true`, behaves as described above. When set to `false`, when `triggers` hit and the timer is not yet started, the `callback` will not be called immediately. Instead the timer is started and the `callback` will be called when the timer finishes. Use this if you expect many changes in short succession, or if the `callback` is relatively costly. On a heavy-load production system you may want to set this to `false`.
 `trigger_delay` | (default 200ms): the time the timer will be set to. You may want to increase this value on heavy-load production system, or when the `callback` is relatively costly.
-`reduce_triggers` | (default `true`): related to the 3rd step above. When `true`, behaves as described above. When `false`, `triggers` will be called for every change. Use this if you want to keep track of which changes happen to which tables.
+`reduce_triggers` | (default `true`): related to the 3rd step above. When `true`, behaves as described above. When `false`, `triggers` will be called for every change. The `callback` will still be called as described after the timer finishes. Use this if you want to keep track of which changes happen to which tables.
 
 
-## return
+## Return value
 
 `handle`: Object with the following fields.
 
