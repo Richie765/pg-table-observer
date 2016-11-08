@@ -87,7 +87,7 @@ Field | Description
 `delete` | For DELETE, `true`
 `update` | For UPDATE, an object that contains the old and new values of each changed column. If a column `score` changed from 10 to 20, `change.update.score.from` would be 10 and `change.update.score.to` would be 20.
 `row` | The row values, for UPDATE, the NEW row values
-`change.old` | For UPDATE, the OLD row values
+`old` | For UPDATE, the OLD row values
 
 ## Return value
 
@@ -131,7 +131,9 @@ Field | Description
 
 `handle`: Object with the following fields.
 
-`async stop()`: Function. Stop observing the tables.
+Field | Description
+----- | -----------
+`async stop()` | async function(). Stop observing the tables.
 
 # async cleanup()
 
