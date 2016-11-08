@@ -78,7 +78,7 @@ Parameter | Description
 `tables` | A string or array of tables to monitor. Table names will be converted to lowercase, and duplicates will be removed.
 `callback` | function(change). Will be called for any change to any of the tables that are being monitored. See below for its fields.
 
-Fields for the `change` parameter of the `callback`.
+Fields for the `change` parameter of the `callback`:
 
 Field | Description
 -------------- | -----------
@@ -91,7 +91,7 @@ Field | Description
 
 ## Return value
 
-`handle`: Object with the following fields.
+`handle`: Object with the following fields:
 
 Field | Description
 ----- | -----------
@@ -118,7 +118,7 @@ Parameter | Description
 `triggers` | function(change). Will be called when a change to `tables` happens, with the same fields as described above. If this function returns `true`, the `callback` | function(). Will be called with `triggers` returns true, as described above.
 `options` | An optional object that may be used to change the default behavior as described above. See below for the possible options.
 
-Options parameter.
+Options parameter:
 
 Field | Description
 --------------- | -----------
