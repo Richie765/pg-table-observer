@@ -1,4 +1,4 @@
-# pg-observe-table
+# pg-table-observer
 Observe PostgreSQL table for changes.
 
 Requires PostgresSQL version 9.3 or above.
