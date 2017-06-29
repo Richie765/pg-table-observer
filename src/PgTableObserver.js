@@ -318,6 +318,7 @@ class PgTableObserver {
     }
 
     if(this.notify_conn) {
+      await notify_conn.none('UNLISTEN $1~', this.channel);
       await this.notify_conn.done();
       this.notify_conn = undefined;
     }
