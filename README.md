@@ -19,8 +19,7 @@ async function start() {
     let table_observer = new PgTableObserver(db, 'myapp');
 
     async function cleanupAndExit() {
-      await table_observer.cleanup();
-      pgp.end();
+      await table_observer.cleanup();      
       process.exit();
     }
 
