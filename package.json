@@ -6,7 +6,7 @@
   "dependencies": {
     "babel-runtime": "^6.23.0",
     "lodash": "^4.17.4",
-    "pg-promise": "^6.2.0",
+    "pg-promise": "^6.2.1",
     "source-map-support": "^0.4.15"
   },
   "devDependencies": {
